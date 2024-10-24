@@ -5,10 +5,10 @@
 #
 ---
 - name: Install headless packages
-      become: yes
-      apt:
-        name: "{{ headless_packages }}"
-        state: present
+  become: yes
+  apt:
+    name: "{{ headless_packages }}"
+    state: present
 
 - name: Install headful packages
   become: yes
