@@ -1,0 +1,17 @@
+#
+# Installs hwinfo and checks number of monitors
+#
+---
+- name: Install hwinfo
+  become: yes
+  apt:
+    name: hwinfo
+    state: present
+
+- name: Register the number of monitors
+  shell: hwinfo --monitor --short | grep -v -i "monitor" | wc -l
+  register: monitor_count
+
+- name: Register monitor flag
+  set_fact:
+    monitor_flag: "{{ monitor_count.stdout | int > 0 }}"

@@ -14,38 +14,13 @@
         var: ansible_env
 
     - name: Install oh-my-zsh
-      include_tasks: oh_my_zsh_play.yml
+      include_tasks: plays/oh_my_zsh_play.yml
 
     - name: Add repositories
-      include_tasks: repo_play.yml
+      include_tasks: plays/repo_play.yml
       
-    - name: Install hwinfo
-      become: yes
-      apt:
-        name: hwinfo
-        state: present
+    - name: Get monitor flag
+      include_tasks: plays/monitor_flag_play.yml
 
-    - name: Register the number of monitors
-      shell: hwinfo --monitor --short | grep -v -i "monitor" | wc -l
-      register: monitor_count
-
-    - name: Register monitor flag
-      set_fact:
-        monitor_flag: "{{ monitor_count.stdout | int > 0 }}"
-
-    - name: Install headless packages
-      become: yes
-      apt:
-        name: "{{ headless_packages }}"
-        state: present
-
-    - name: Install headful packages
-      become: yes
-      apt:
-        name: "{{ headful_packages }}"
-        state: present
-      when: monitor_flag
-
-    - name: Pin packages
-      become: yes
-      command: apt-mark hold "{{ held_packages | join(' ') }}"
+    - name: Install packages
+      include_tasks: plays/install_play.yml
