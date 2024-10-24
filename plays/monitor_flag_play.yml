@@ -11,6 +11,7 @@
 - name: Register the number of monitors
   shell: hwinfo --monitor --short | grep -v -i "monitor" | wc -l
   register: monitor_count
+  changed_when: false
 
 - name: Register monitor flag
   set_fact:

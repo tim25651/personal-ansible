@@ -37,8 +37,3 @@
     regexp: '^plugins=\(.*\)$'
     line: "plugins=(git {{ plugins | map(attribute='name') | join(' ') }})"
     state: present
-
-- name: Source .zshrc to apply changes
-  become: no
-  shell: "source {{ ansible_env.HOME }}/.zshrc || true"
-

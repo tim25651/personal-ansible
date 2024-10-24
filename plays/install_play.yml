@@ -9,14 +9,19 @@
   apt:
     name: "{{ headless_packages }}"
     state: present
+    allow_downgrades: yes
 
 - name: Install headful packages
   become: yes
   apt:
     name: "{{ headful_packages }}"
     state: present
+    allow_downgrades: yes
   when: monitor_flag
 
 - name: Pin packages
   become: yes
-  command: apt-mark hold "{{ held_packages | join(' ') }}"
+  command: apt-mark hold {{ item }}
+  register: held_packages_result
+  loop: "{{ held_packages }}"
+  changed_when: "held_packages_result.stdout.find('was already set on hold') == -1"

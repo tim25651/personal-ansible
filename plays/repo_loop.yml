@@ -11,12 +11,31 @@
     dest: "/usr/share/keyrings/{{ repo.gpg_name }}.gpg"
     mode: '0644'
   when: 
+    - not repo.dearmor
+    - repo.gpg_url is defined
+    - repo.gpg_url is not none
+
+- name: "Previous GPG Keys of {{ repo.base }} exist"
+  become: yes
+  stat: 
+    path: "/usr/share/keyrings/{{ repo.gpg_name }}.gpg"
+    checksum_algorithm: md5
+  register: gpg_key
+  changed_when: false
+  when:
+    - repo.dearmor
     - repo.gpg_url is defined
     - repo.gpg_url is not none
 
 - name: "Dearmor {{ repo.base }} GPG key"
   become: yes
-  shell: cat /usr/share/keyrings/{{ repo.gpg_name }}.gpg | gpg --dearmor --yes -o /usr/share/keyrings/{{ repo.gpg_name }}.gpg
+  shell: |
+    curl -sSL {{ repo.gpg_url }} \
+    | gpg --dearmor --yes -o /usr/share/keyrings/{{ repo.gpg_name }}.gpg \
+    && md5sum /usr/share/keyrings/{{ repo.gpg_name }}.gpg \
+    | cut -d ' ' -f 1
+  register: md5sum_new
+  changed_when: gpg_key.stat.checksum is not defined or (gpg_key.stat.checksum != md5sum_new.stdout)
   when: 
     - repo.dearmor
     - repo.gpg_url is defined

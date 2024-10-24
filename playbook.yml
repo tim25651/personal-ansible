@@ -3,16 +3,13 @@
   become: no
   vars:
     repositories: "{{ lookup('file', 'custom/repositories.yml') | from_yaml }}"
+    selected_repositories: "all"
     headless_packages: "{{ lookup('file', 'custom/headless.yml') | from_yaml }}"
     headful_packages: "{{ lookup('file', 'custom/headful.yml') | from_yaml }}"
     held_packages: "{{ lookup('file', 'custom/held.yml') | from_yaml }}"
     plugins: "{{ lookup('file', 'custom/plugins.yml') | from_yaml }}"
   
   tasks:
-    - name: Debug ansible environment
-      debug:
-        var: ansible_env
-
     - name: Install oh-my-zsh
       include_tasks: plays/oh_my_zsh_play.yml
 
