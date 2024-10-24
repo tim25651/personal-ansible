@@ -125,6 +125,12 @@
   
 
   tasks:
+    - name: Copy .netrc to /etc/apt/auth.conf.d
+      copy:
+        src: ~/.netrc
+        dest: /etc/apt/auth.conf.d/netrc.conf
+        mode: '0600'
+
     - name: Register dpkg architecture
       shell: dpkg --print-architecture
       register: dpkg_arch
