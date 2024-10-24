@@ -1,4 +1,11 @@
 ---
+- name: Copy .netrc to /root
+  become: yes
+  copy:
+    src: "{{ ansible_env.HOME }}/.netrc"
+    dest: /root/.netrc
+    mode: '0600'
+
 - name: Copy .netrc to /etc/apt/auth.conf.d
   become: yes
   copy:
