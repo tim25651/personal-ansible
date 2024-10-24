@@ -1,0 +1,44 @@
+---
+- name: Install necessary utils
+  apt:
+    name:
+      - curl
+      - git
+      - zsh
+    state: present
+
+- name: Change default shell to zsh for the current user
+  become: yes
+  user:
+    name: "{{ ansible_env.USER }}"
+    shell: /usr/bin/zsh
+
+- name: Install Oh My Zsh
+  become: no
+  shell: |
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" || true
+  args:
+    creates: "{{ ansible_env.HOME }}/.oh-my-zsh"
+
+- name: Install plugins
+  become: no
+  git:
+    repo: "{{ plugin.url }}"
+    dest: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/{{ plugin.name }}"
+    version: "{{ plugin.version }}"
+  loop: "{{ plugins }}"
+  loop_control:
+    loop_var: plugin
+
+- name: Ensure plugins are added to .zshrc
+  become: no
+  lineinfile:
+    path: "{{ ansible_env.HOME }}/.zshrc"
+    regexp: '^plugins=\(.*\)$'
+    line: "plugins=(git {{ plugins | map(attribute='name') | join(' ') }})"
+    state: present
+
+- name: Source .zshrc to apply changes
+  become: no
+  shell: "source {{ ansible_env.HOME }}/.zshrc || true"
+

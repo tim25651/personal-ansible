@@ -1,0 +1,5 @@
+#
+# packages to call apt-mark hold on
+#
+---
+- libcudnn8

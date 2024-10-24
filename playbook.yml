@@ -1,49 +1,51 @@
 ---
 - hosts: localhost
   become: no
+  vars:
+    repositories: "{{ lookup('file', 'custom/repositories.yml') | from_yaml }}"
+    headless_packages: "{{ lookup('file', 'custom/headless.yml') | from_yaml }}"
+    headful_packages: "{{ lookup('file', 'custom/headful.yml') | from_yaml }}"
+    held_packages: "{{ lookup('file', 'custom/held.yml') | from_yaml }}"
+    plugins: "{{ lookup('file', 'custom/plugins.yml') | from_yaml }}"
+  
   tasks:
-    - name: Gather facts results
+    - name: Debug ansible environment
       debug:
-        msg: "{{ ansible_env }}"
+        var: ansible_env
 
-    - import_tasks: tools.yml
+    - name: Install oh-my-zsh
+      include_tasks: oh_my_zsh_play.yml
 
-    - name: Change default shell to zsh for the current user
+    - name: Add repositories
+      include_tasks: repo_play.yml
+      
+    - name: Install hwinfo
       become: yes
-      user:
-        name: "tihoph"
-        shell: /usr/bin/zsh
-
-    - name: Install Oh My Zsh
-      become: no
-      shell: |
-        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" || true
-      args:
-        creates: "{{ ansible_env.HOME }}/.oh-my-zsh"
-
-    - name: Clone zsh-autosuggestions plugin
-      become: no
-      git:
-        repo: https://github.com/zsh-users/zsh-autosuggestions
-        dest: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
-        version: master
-
-    - name: Clone zsh-syntax-highlighting plugin
-      become: no
-      git:
-        repo: https://github.com/zsh-users/zsh-syntax-highlighting
-        dest: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
-        version: master
-
-    - name: Ensure plugins are added to .zshrc
-      become: no
-      lineinfile:
-        path: "{{ ansible_env.HOME }}/.zshrc"
-        regexp: '^plugins=\(.*\)$'
-        line: 'plugins=(git zsh-autosuggestions zsh-syntax-highlighting)'
+      apt:
+        name: hwinfo
         state: present
 
-    - name: Source .zshrc to apply changes
-      become: no
-      shell: "source {{ ansible_env.HOME }}/.zshrc || true"
+    - name: Register the number of monitors
+      shell: hwinfo --monitor --short | grep -v -i "monitor" | wc -l
+      register: monitor_count
 
+    - name: Register monitor flag
+      set_fact:
+        monitor_flag: "{{ monitor_count.stdout | int > 0 }}"
+
+    - name: Install headless packages
+      become: yes
+      apt:
+        name: "{{ headless_packages }}"
+        state: present
+
+    - name: Install headful packages
+      become: yes
+      apt:
+        name: "{{ headful_packages }}"
+        state: present
+      when: monitor_flag
+
+    - name: Pin packages
+      become: yes
+      command: apt-mark hold "{{ held_packages | join(' ') }}"

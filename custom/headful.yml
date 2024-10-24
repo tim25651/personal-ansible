@@ -1,0 +1,22 @@
+# 
+# packages to install only if a monitor is available
+#
+---
+- heif-gdk-pixbuf
+- thunderbird
+- gnome-sushi
+- gimp
+- vlc
+
+# Custom repo
+# - draw.io
+- portfolio-performance
+- ucsf-chimerax
+- schrodinger
+- wps-office
+- zettlr
+
+# Additional Repos
+- spotify-client
+- microsoft-edge-stable
+- zotero

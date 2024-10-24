@@ -1,0 +1,55 @@
+#
+# defines repositories to be added to the system
+# each needs a base, gpg_url, deb_url, dearmor, gpg_name
+# if multiple repositories use the same GPG key, they can share the same gpg_name
+# set the gpg_url to null if no GPG key is needed (e. g. the second repo with the same key)
+# dearmor is a boolean value, true if the GPG key needs to be dearmed (i. e. is a .asc file)
+#
+---
+- base: "custom-repo"
+  gpg_url: "https://repo.audivir.de/debs/pub.gpg"
+  deb_url: "https://repo.audivir.de/debs stable main"
+  dearmor: false
+  gpg_name: "custom-repo"
+
+- base: "onedrive"
+  gpg_url: "https://download.opensuse.org/repositories/home:/npreining:/debian-ubuntu-onedrive/xUbuntu_22.04/Release.key"
+  deb_url: "https://download.opensuse.org/repositories/home:/npreining:/debian-ubuntu-onedrive/xUbuntu_22.04/ ./"
+  dearmor: true
+  gpg_name: "onedrive"
+
+- base: "cuda2004"
+  gpg_url: "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub"
+  deb_url: "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64 ./"
+  dearmor: true
+  gpg_name: "cuda2004"
+
+- base: "eduvpn"
+  gpg_url: "https://app.eduvpn.org/linux/v4/deb/app+linux@eduvpn.org.gpg"
+  deb_url: "https://app.eduvpn.org/linux/v4/deb/ jammy main"
+  dearmor: false
+  gpg_name: "eduvpn"
+
+- base: "spotify"
+  gpg_url: "https://download.spotify.com/debian/pubkey_6224F9941A8AA6D1.gpg"
+  deb_url: "http://repository.spotify.com stable non-free"
+  dearmor: true
+  gpg_name: "spotify"
+
+- base: "microsoft-vscode"
+  gpg_url: "https://packages.microsoft.com/keys/microsoft.asc"
+  deb_url: "https://packages.microsoft.com/repos/vscode stable main"
+  dearmor: true
+  gpg_name: "microsoft"
+
+- base: "microsoft-edge"
+  gpg_url: null
+  deb_url: "https://packages.microsoft.com/repos/edge stable main"
+  dearmor: true
+  gpg_name: "microsoft"
+
+- base: "zotero"
+  gpg_url: "https://raw.githubusercontent.com/retorquere/zotero-deb/master/zotero-archive-keyring.gpg"
+  deb_url: "https://zotero.retorque.re/file/apt-package-archive ./"
+  dearmor: false
+  gpg_name: "zotero"  

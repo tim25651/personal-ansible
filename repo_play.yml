@@ -1,0 +1,30 @@
+---
+- name: Copy .netrc to /etc/apt/auth.conf.d
+  become: yes
+  copy:
+    src: ~/.netrc
+    dest: /etc/apt/auth.conf.d/netrc.conf
+    mode: '0600'
+    
+- name: Register dpkg architecture
+  shell: dpkg --print-architecture
+  register: dpkg_arch
+
+- name: Ensure /usr/share/keyrings directory exists
+  become: yes
+  file:
+    path: /usr/share/keyrings
+    state: directory
+    mode: '0755'
+
+- name: "Download GPG keys and add repositories"
+  include_tasks: repo_loop.yml
+  loop: "{{ repositories }}"
+  loop_control:
+    loop_var: repo
+
+- name: "Update and upgrade apt packages"
+  become: yes
+  apt:
+    update_cache: yes
+    upgrade: dist

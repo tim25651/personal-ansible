@@ -1,0 +1,64 @@
+#
+# list of apt packages to install independent of available monitors
+#
+---
+- aha
+- git
+- curl
+- p7zip-rar
+- screen
+- sqlite3
+- tree
+- wireguard
+- xclip
+- zsh
+
+# remote utils
+- nomachine
+
+# linux utils
+- linux-headers-generic-hwe-22.04
+
+# ubuntu utils
+- language-pack-gnome-en
+- ubuntu-minimal
+- ubuntu-standard
+- ubuntu-restricted-extras
+- ubuntu-desktop
+
+# latex utils
+# - texlive-full
+
+# vm utils
+- freerdp2-x11
+- qemu-system-x86
+- virt-manager
+
+# docker utils
+- uidmap
+- systemd-container
+- nvidia-container-toolkit # TODO: when nvidia driver is installed
+
+# network utils
+- apache2-utils
+- nginx
+
+# fs utils
+- cifs-utils
+- sshfs
+- samba
+
+# top utils
+- bpytop
+- iotop
+- nvtop # TODO: when nvidia driver is installed
+
+# Custom repo
+- micromamba
+
+# Additional Repos
+- onedrive
+- cuda-toolkit-11-8
+- libcudnn8=8.6.0.163-1+cuda11.8
+- eduvpn-client
+- code

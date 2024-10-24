@@ -1,0 +1,5 @@
+- nvidia only if you have a nvidia gpu
+- python env?
+- gitea rootless
+- enroot
+- ...

@@ -1,0 +1,31 @@
+#
+# Inner loop of adding repositories to the system
+# needs a loop variable repo with base, gpg_url, deb_url, dearmor, gpg_name
+# needs dpkg_arch to be registered
+# doesn't call apt update -> call it after all repositories are added
+#
+- name: "Download {{ repo.base }} GPG key to /usr/share/keyrings"
+  become: yes
+  get_url:
+    url: "{{ repo.gpg_url }}"
+    dest: "/usr/share/keyrings/{{ repo.gpg_name }}.gpg"
+    mode: '0644'
+  when: 
+    - repo.gpg_url is defined
+    - repo.gpg_url is not none
+
+- name: "Dearmor {{ repo.base }} GPG key"
+  become: yes
+  shell: cat /usr/share/keyrings/{{ repo.gpg_name }}.gpg | gpg --dearmor --yes -o /usr/share/keyrings/{{ repo.gpg_name }}.gpg
+  when: 
+    - repo.dearmor
+    - repo.gpg_url is defined
+    - repo.gpg_url is not none
+
+- name: "Add {{ repo.base }} APT repository using GPG key in /usr/share/keyrings"
+  become: yes
+  apt_repository:
+    filename: "{{ repo.base }}"
+    repo: "deb [arch={{ dpkg_arch.stdout }} signed-by=/usr/share/keyrings/{{ repo.gpg_name }}.gpg] {{ repo.deb_url }}"
+    state: present
+    update_cache: no
