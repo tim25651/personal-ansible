@@ -1,0 +1,49 @@
+---
+- hosts: localhost
+  become: no
+  tasks:
+    - name: Gather facts results
+      debug:
+        msg: "{{ ansible_env }}"
+
+    - import_tasks: tools.yml
+
+    - name: Change default shell to zsh for the current user
+      become: yes
+      user:
+        name: "tihoph"
+        shell: /usr/bin/zsh
+
+    - name: Install Oh My Zsh
+      become: no
+      shell: |
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" || true
+      args:
+        creates: "{{ ansible_env.HOME }}/.oh-my-zsh"
+
+    - name: Clone zsh-autosuggestions plugin
+      become: no
+      git:
+        repo: https://github.com/zsh-users/zsh-autosuggestions
+        dest: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+        version: master
+
+    - name: Clone zsh-syntax-highlighting plugin
+      become: no
+      git:
+        repo: https://github.com/zsh-users/zsh-syntax-highlighting
+        dest: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
+        version: master
+
+    - name: Ensure plugins are added to .zshrc
+      become: no
+      lineinfile:
+        path: "{{ ansible_env.HOME }}/.zshrc"
+        regexp: '^plugins=\(.*\)$'
+        line: 'plugins=(git zsh-autosuggestions zsh-syntax-highlighting)'
+        state: present
+
+    - name: Source .zshrc to apply changes
+      become: no
+      shell: "source {{ ansible_env.HOME }}/.zshrc || true"
+

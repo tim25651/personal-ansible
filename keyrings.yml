@@ -1,0 +1,284 @@
+---
+- hosts: localhost
+  become: yes
+  vars:
+    custom_repo_base: "custom-repo"
+    custom_repo_gpg_url: "https://repo.audivir.de/debs/pub.gpg"
+    custom_repo_dearmor: false
+    custom_repo_deb: "https://repo.audivir.de/debs stable main"
+
+    onedrive_base: "onedrive"
+    onedrive_gpg_url: " https://download.opensuse.org/repositories/home:/npreining:/debian-ubuntu-onedrive/xUbuntu_22.04/Release.key"
+    onedrive_dearmor: true
+    onedrive_deb: "https://download.opensuse.org/repositories/home:/npreining:/debian-ubuntu-onedrive/xUbuntu_22.04/ ./"
+
+    cuda2004_base: "cuda2004"
+    cuda2004_gpg_url: "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub"
+    cuda2004_dearmor: true
+    cuda2004_deb: "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64 ./"
+
+    eduvpn_base: "eduvpn"
+    eduvpn_gpg_url: "https://app.eduvpn.org/linux/v4/deb/app+linux@eduvpn.org.gpg"
+    eduvpn_dearmor: false
+    eduvpn_deb: "https://app.eduvpn.org/linux/v4/deb/ jammy main"
+    
+    spotify_base: "spotify"
+    spotify_gpg_url: "https://download.spotify.com/debian/pubkey_6224F9941A8AA6D1.gpg"
+    spotify_dearmor: true
+    spotify_deb: "http://repository.spotify.com stable non-free"
+
+    microsoft_base: "microsoft"
+    microsoft_gpg_url: "https://packages.microsoft.com/keys/microsoft.asc"
+    microsoft_dearmor: true
+    vscode_deb: "https://packages.microsoft.com/repos/vscode stable main"
+    edge_deb: "https://packages.microsoft.com/repos/edge stable main"
+
+    zotero_base: "zotero"
+    zotero_gpg_url: "https://raw.githubusercontent.com/retorquere/zotero-deb/master/zotero-archive-keyring.gpg"
+    zotero_dearmor: false
+    zotero_deb: "https://zotero.retorque.re/file/apt-package-archive ./"
+
+    headless_packages:
+      - aha
+      - git
+      - curl
+      - p7zip-rar
+      - screen
+      - sqlite3
+      - tree
+      - wireguard
+      - xclip
+      - zsh
+
+      # remote utils
+      - nomachine
+
+      # linux utils
+      - linux-headers-generic-hwe-22.04
+
+      # ubuntu utils
+      - language-pack-gnome-en
+      - ubuntu-minimal
+      - ubuntu-standard
+      - ubuntu-restricted-extras
+      - ubuntu-desktop
+
+      # latex utils
+      # - texlive-full
+
+      # vm utils
+      - freerdp2-x11
+      - qemu-system-x86
+      - virt-manager
+
+      # docker utils
+      - uidmap
+      - systemd-container
+      - nvidia-container-toolkit # TODO: when nvidia driver is installed
+
+      # network utils
+      - apache2-utils
+      - nginx
+
+      # fs utils
+      - cifs-utils
+      - sshfs
+      - samba
+
+      # top utils
+      - bpytop
+      - iotop
+      - nvtop # TODO: when nvidia driver is installed
+
+      # Custom repo
+      - micromamba
+
+      # Additional Repos
+      - onedrive
+      - cuda-toolkit-11-8
+      - libcudnn8=8.6.0.163-1+cuda11.8
+      - eduvpn-client
+      - code
+  
+    headful_packages:
+      - heif-gdk-pixbuf
+      - thunderbird
+      - gnome-sushi
+      - gimp
+      - vlc
+
+      # Custom repo
+      # - draw.io
+      - portfolio-performance
+      - ucsf-chimerax
+      - schrodinger
+      - wps-office
+      - zettlr
+
+      # Additional Repos
+      - spotify-client
+      - microsoft-edge-stable
+      - zotero
+      
+    held_packages:
+      - libcudnn8
+  
+
+  tasks:
+    - name: Register dpkg architecture
+      shell: dpkg --print-architecture
+      register: dpkg_arch
+
+    - name: Ensure /usr/share/keyrings directory exists
+      file:
+        path: /usr/share/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: "Download {{ custom_repo_base }} GPG key to /usr/share/keyrings"
+      get_url:
+        url: "{{ custom_repo_gpg_url }}"
+        dest: "/usr/share/keyrings/{{ custom_repo_base }}.gpg"
+        mode: '0644'
+
+    - name: "Dearmor {{ custom_repo_base }} GPG key"
+      shell: cat /usr/share/keyrings/{{ custom_repo_base }}.gpg | gpg --dearmor --yes -o /usr/share/keyrings/{{ custom_repo_base }}.gpg
+      when: custom_repo_dearmor
+
+    - name: "Add {{ custom_repo_base }} APT repository using GPG key in /usr/share/keyrings"
+      apt_repository:
+        filename: "{{ custom_repo_base }}"
+        repo: "deb [arch={{ dpkg_arch.stdout }} signed-by=/usr/share/keyrings/{{ custom_repo_base }}.gpg] {{ custom_repo_deb }}"
+        state: present
+
+    - name: "Download {{ onedrive_base }} GPG key to /usr/share/keyrings"
+      get_url:
+        url: "{{ onedrive_gpg_url }}"
+        dest: "/usr/share/keyrings/{{ onedrive_base }}.gpg"
+        mode: '0644'
+
+    - name: "Dearmor {{ onedrive_base }} GPG key"
+      shell: cat /usr/share/keyrings/{{ onedrive_base }}.gpg | gpg --dearmor --yes -o /usr/share/keyrings/{{ onedrive_base }}.gpg
+      when: onedrive_dearmor
+
+    - name: "Add {{ onedrive_base }} APT repository using GPG key in /usr/share/keyrings"
+      apt_repository:
+        filename: "{{ onedrive_base }}"
+        repo: "deb [arch={{ dpkg_arch.stdout }} signed-by=/usr/share/keyrings/{{ onedrive_base }}.gpg] {{ onedrive_deb }}"
+        state: present
+
+    - name: "Download {{ cuda2004_base }} GPG key to /usr/share/keyrings"
+      get_url:
+        url: "{{ cuda2004_gpg_url }}"
+        dest: "/usr/share/keyrings/{{ cuda2004_base }}.gpg"
+        mode: '0644'
+
+    - name: "Dearmor {{ cuda2004_base }} GPG key"
+      shell: cat /usr/share/keyrings/{{ cuda2004_base }}.gpg | gpg --dearmor --yes -o /usr/share/keyrings/{{ cuda2004_base }}.gpg
+      when: cuda2004_dearmor
+
+    - name: "Add {{ cuda2004_base }} APT repository using GPG key in /usr/share/keyrings"
+      apt_repository:
+        filename: "{{ cuda2004_base }}"
+        repo: "deb [arch={{ dpkg_arch.stdout }} signed-by=/usr/share/keyrings/{{ cuda2004_base }}.gpg] {{ cuda2004_deb }}"
+        state: present
+
+    - name: "Download {{ eduvpn_base }} GPG key to /usr/share/keyrings"
+      get_url:
+        url: "{{ eduvpn_gpg_url }}"
+        dest: "/usr/share/keyrings/{{ eduvpn_base }}.gpg"
+        mode: '0644'
+
+    - name: "Add {{ eduvpn_base }} GPG key to APT keyring"
+      shell: cat /usr/share/keyrings/{{ eduvpn_base }}.gpg | gpg --dearmor --yes -o /usr/share/keyrings/{{ eduvpn_base }}.gpg
+      when: eduvpn_dearmor
+
+    - name: "Add {{ eduvpn_base }} APT repository using GPG key in /usr/share/keyrings"
+      apt_repository:
+        filename: "{{ eduvpn_base }}"
+        repo: "deb [arch={{ dpkg_arch.stdout }} signed-by=/usr/share/keyrings/{{ eduvpn_base }}.gpg] {{ eduvpn_deb }}"
+        state: present
+
+    - name: "Download {{ spotify_base }} GPG key to /usr/share/keyrings"
+      get_url:
+        url: "{{ spotify_gpg_url }}"
+        dest: "/usr/share/keyrings/{{ spotify_base }}.gpg"
+        mode: '0644'
+
+    - name: "Dearmor {{ spotify_base }} GPG key"
+      shell: cat /usr/share/keyrings/{{ spotify_base }}.gpg | gpg --dearmor --yes -o /usr/share/keyrings/{{ spotify_base }}.gpg
+      when: spotify_dearmor
+
+    - name: "Add {{ spotify_base }} APT repository using GPG key in /usr/share/keyrings"
+      apt_repository:
+        filename: "{{ spotify_base }}"
+        repo: "deb [arch={{ dpkg_arch.stdout }} signed-by=/usr/share/keyrings/{{ spotify_base }}.gpg] {{ spotify_deb }}"
+        state: present
+
+    - name: "Download {{ microsoft_base }} GPG key to /usr/share/keyrings"
+      get_url:
+        url: "{{ microsoft_gpg_url }}"
+        dest: "/usr/share/keyrings/{{ microsoft_base }}.gpg"
+        mode: '0644'
+
+    - name: "Dearmor {{ microsoft_base }} GPG key"
+      shell: cat /usr/share/keyrings/{{ microsoft_base }}.gpg | gpg --dearmor --yes -o /usr/share/keyrings/{{ microsoft_base }}.gpg
+      when: microsoft_dearmor
+
+    - name: "Add {{ microsoft_base }} APT repository using GPG key in /usr/share/keyrings"
+      apt_repository:
+        filename: "{{ microsoft_base }}-vscode"
+        repo: "deb [arch={{ dpkg_arch.stdout }} signed-by=/usr/share/keyrings/{{ microsoft_base }}.gpg] {{ vscode_deb }}"
+        state: present
+
+    - name: "Add {{ microsoft_base }} APT repository using GPG key in /usr/share/keyrings"
+      apt_repository:
+        filename: "{{ microsoft_base }}-edge"
+        repo: "deb [arch={{ dpkg_arch.stdout }} signed-by=/usr/share/keyrings/{{ microsoft_base }}.gpg] {{ edge_deb }}"
+        state: present
+
+    - name: "Download {{ zotero_base }} GPG key to /usr/share/keyrings"
+      get_url:
+        url: "{{ zotero_gpg_url }}"
+        dest: "/usr/share/keyrings/{{ zotero_base }}.gpg"
+        mode: '0644'
+
+    - name: "Dearmor {{ zotero_base }} GPG key"
+      shell: cat /usr/share/keyrings/{{ zotero_base }}.gpg | gpg --dearmor --yes -o /usr/share/keyrings/{{ zotero_base }}.gpg
+      when: zotero_dearmor
+
+    - name: "Add {{ zotero_base }} APT repository using GPG key in /usr/share/keyrings"
+      apt_repository:
+        filename: "{{ zotero_base }}"
+        repo: "deb [arch={{ dpkg_arch.stdout }} signed-by=/usr/share/keyrings/{{ zotero_base }}.gpg] {{ zotero_deb }}"
+        state: present
+
+    - name: Update and upgrade apt packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Install hwinfo
+      apt:
+        name: hwinfo
+        state: present
+
+    - name: Register the number of monitors
+      shell: hwinfo --monitor --short | grep -v -i "monitor" | wc -l
+      register: monitor_count
+
+    - name: Install headless packages
+      apt:
+        name: "{{ headless_packages }}"
+        state: present
+
+    - name: Install headful packages
+      apt:
+        name: "{{ headful_packages }}"
+        state: present
+      when: monitor_count.stdout | int > 0
+
+    - name: Pin packages
+      dpkg_selections:
+        name: "{{ held_packages }}"
+        selection: hold
