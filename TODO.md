@@ -3,3 +3,4 @@
 - gitea rootless
 - enroot
 - ...
+- check for installed packages which are not declared

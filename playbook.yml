@@ -8,8 +8,16 @@
     headful_packages: "{{ lookup('file', 'custom/headful.yml') | from_yaml }}"
     held_packages: "{{ lookup('file', 'custom/held.yml') | from_yaml }}"
     plugins: "{{ lookup('file', 'custom/plugins.yml') | from_yaml }}"
-  
+  roles:
+    - role: ansible-snapd
+      become: true
+      snapd_purge: true
+      # snapd_block_later_installation: false
+
   tasks:
+    - name: Debug become
+      debug:
+        var: ansible_env.user
     - name: Install oh-my-zsh
       include_tasks: plays/oh_my_zsh_play.yml
 
